@@ -20,7 +20,7 @@ inline void TFT_eSPI::begin_touch_read_write(void){
   CS_H; // Just in case it has been left low
   #if defined (SPI_HAS_TRANSACTION) && defined (SUPPORT_TRANSACTIONS)
     if (locked) {locked = false; spi.beginTransaction(SPISettings(SPI_TOUCH_FREQUENCY, MSBFIRST, SPI_MODE0));}
-  #else
+  #elif !defined(GD32VF103)
     spi.setFrequency(SPI_TOUCH_FREQUENCY);
   #endif
   SET_BUS_READ_MODE;
@@ -35,7 +35,7 @@ inline void TFT_eSPI::end_touch_read_write(void){
   T_CS_H;
   #if defined (SPI_HAS_TRANSACTION) && defined (SUPPORT_TRANSACTIONS)
     if(!inTransaction) {if (!locked) {locked = true; spi.endTransaction();}}
-  #else
+  #elif !defined(GD32VF103)
     spi.setFrequency(SPI_FREQUENCY);
   #endif
   //SET_BUS_WRITE_MODE;
@@ -58,6 +58,35 @@ uint8_t TFT_eSPI::getTouchRaw(uint16_t *x, uint16_t *y){
   begin_touch_read_write();
   
   // Start YP sample request for x position, read 4 times and keep last sample
+  #if defined(GD32VF103)
+  touch_spi.transfer(0xd0);                    // Start new YP conversion
+  touch_spi.transfer(0);                       // Read first 8 bits
+  touch_spi.transfer(0xd0);                    // Read last 8 bits and start new YP conversion
+  touch_spi.transfer(0);                       // Read first 8 bits
+  touch_spi.transfer(0xd0);                    // Read last 8 bits and start new YP conversion
+  touch_spi.transfer(0);                       // Read first 8 bits
+  touch_spi.transfer(0xd0);                    // Read last 8 bits and start new YP conversion
+
+  tmp = touch_spi.transfer(0);                   // Read first 8 bits
+  tmp = tmp <<5;
+  tmp |= 0x1f & (touch_spi.transfer(0x90)>>3);   // Read last 8 bits and start new XP conversion
+
+  *x = tmp;
+
+  // Start XP sample request for y position, read 4 times and keep last sample
+  touch_spi.transfer(0);                       // Read first 8 bits
+  touch_spi.transfer(0x90);                    // Read last 8 bits and start new XP conversion
+  touch_spi.transfer(0);                       // Read first 8 bits
+  touch_spi.transfer(0x90);                    // Read last 8 bits and start new XP conversion
+  touch_spi.transfer(0);                       // Read first 8 bits
+  touch_spi.transfer(0x90);                    // Read last 8 bits and start new XP conversion
+
+  tmp = touch_spi.transfer(0);                 // Read first 8 bits
+  tmp = tmp <<5;
+  tmp |= 0x1f & (touch_spi.transfer(0)>>3);    // Read last 8 bits
+
+  *y = tmp;
+  #else
   spi.transfer(0xd0);                    // Start new YP conversion
   spi.transfer(0);                       // Read first 8 bits
   spi.transfer(0xd0);                    // Read last 8 bits and start new YP conversion
@@ -85,6 +114,7 @@ uint8_t TFT_eSPI::getTouchRaw(uint16_t *x, uint16_t *y){
   tmp |= 0x1f & (spi.transfer(0)>>3);    // Read last 8 bits
 
   *y = tmp;
+  #endif
 
   end_touch_read_write();
 
@@ -100,10 +130,17 @@ uint16_t TFT_eSPI::getTouchRawZ(void){
   begin_touch_read_write();
 
   // Z sample request
+  #if defined(GD32VF103)
+  int16_t tz = 0xFFF;
+  touch_spi.transfer(0xb0);               // Start new Z1 conversion
+  tz += touch_spi.transfer16(0xc0) >> 3;  // Read Z1 and start Z2 conversion
+  tz -= touch_spi.transfer16(0x00) >> 3;  // Read Z2
+  #else
   int16_t tz = 0xFFF;
   spi.transfer(0xb0);               // Start new Z1 conversion
   tz += spi.transfer16(0xc0) >> 3;  // Read Z1 and start Z2 conversion
   tz -= spi.transfer16(0x00) >> 3;  // Read Z2
+  #endif
 
   end_touch_read_write();
 

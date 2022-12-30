@@ -8,8 +8,24 @@
 #define _TFT_eSPI_GD32VF103H_
 
 #include "../TFT_Interface.h"
+#include "../Processors/GD32/GD32_SPI.h"
+#include "gd32vf103_spi.h"
 
 TFT_Interface _com = TFT_Interface();
+
+#if defined(TOUCH)
+spi_parameter_struct spi_config;
+
+spi_config.trans_mode = SPI_TRANSMODE_FULLDUPLEX;
+spi_config.device_mode = SPI_MASTER;
+spi_config.frame_size = SPI_FRAMESIZE_8BIT;
+spi_config.clock_polarity_phase = SPI_CK_PL_LOW_PH_1EDGE;
+spi_config.nss = SPI_NSS_SOFT;
+spi_config.prescale = SPI_PSC_64;
+spi_config.endian = SPI_ENDIAN_MSB;
+GD32_SPI touch_spi = GD32_SPI(TOUCH_SPI, TOUCH_CS, TOUCH_SCK, TOUCH_MISO,
+                              TOUCH_MOSI, &spi_config);
+#endif
 
 // Processor ID reported by getSetup()
 #define PROCESSOR_ID 0x0000
