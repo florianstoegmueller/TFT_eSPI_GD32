@@ -12,7 +12,7 @@ class GD32_SPI {
     uint32_t _sck;
     uint32_t _miso;
     uint32_t _mosi;
-    spi_parameter_struct _config;
+    spi_parameter_struct* _config;
 
    public:
     GD32_SPI(uint32_t spi_dev, uint32_t cs, uint32_t sck, uint32_t miso,
