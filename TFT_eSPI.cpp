@@ -29,7 +29,7 @@
   #include "Processors/TFT_eSPI_STM32.c"
 #elif defined (ARDUINO_ARCH_RP2040)  || defined (ARDUINO_ARCH_MBED) // Raspberry Pi Pico
   #include "Processors/TFT_eSPI_RP2040.c"
-#elif defined(GD32VF103)
+#elif defined (GD32VF103)
   #include "Processors/TFT_eSPI_GD32.h"
 #else
   #include "Processors/TFT_eSPI_Generic.c"
@@ -633,11 +633,10 @@ void TFT_eSPI::init(uint8_t tc)
     spi.pins(6, 7, 8, 0);
   #endif
 
-#if defined (GD32VF103)
-  _com.begin();
-#else
   spi.begin(); // This will set HMISO to input
-#endif
+  
+#elif defined (GD32VF103)
+  _com.begin();
 
 #else
   #if !defined(TFT_PARALLEL_8_BIT) && !defined(RP2040_PIO_INTERFACE)
