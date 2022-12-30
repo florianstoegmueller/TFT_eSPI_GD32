@@ -102,6 +102,8 @@
   #include "Processors/TFT_eSPI_STM32.h"
 #elif defined(ARDUINO_ARCH_RP2040)
   #include "Processors/TFT_eSPI_RP2040.h"
+#elif defined(GD32VF103)
+  #include "Processors/TFT_eSPI_GD32.h"
 #else
   #include "Processors/TFT_eSPI_Generic.h"
 #endif
