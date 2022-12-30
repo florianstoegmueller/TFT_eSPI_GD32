@@ -7,6 +7,10 @@
 #ifndef _TFT_eSPI_GD32VF103H_
 #define _TFT_eSPI_GD32VF103H_
 
+#include "../TFT_Interface.h"
+
+TFT_Interface _com = TFT_Interface();
+
 // Processor ID reported by getSetup()
 #define PROCESSOR_ID 0x0000
 

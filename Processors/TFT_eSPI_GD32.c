@@ -6,8 +6,6 @@
 // Global variables
 ////////////////////////////////////////////////////////////////////////////////////////
 
-TFT_Interface _com = TFT_Interface();
-
 /***************************************************************************************
 ** Function name:           pushBlock - for STM32
 ** Description:             Write a block of pixels of the same colour
