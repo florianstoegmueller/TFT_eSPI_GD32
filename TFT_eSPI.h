@@ -26,10 +26,17 @@
 **                         Section 1: Load required header files
 ***************************************************************************************/
 
+#include <User_Setup_Select.h>
+
 //Standard support
+#if defined(GD32VF103)
+#include "Processors/GD32/Print.h"
+#include "gd32_libopt.h"
+#else
 #include <Arduino.h>
 #include <Print.h>
 #include <SPI.h>
+#endif
 
 /***************************************************************************************
 **                         Section 2: Load library and processor specific header files
@@ -64,8 +71,6 @@
     #endif
   #endif
 #endif
-
-#include <User_Setup_Select.h>
 
 // Handle FLASH based storage e.g. PROGMEM
 #if defined(ARDUINO_ARCH_RP2040)
@@ -762,7 +767,9 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
   bool     verifySetupID(uint32_t id);
 
   // Global variables
+  #if !defined (TFT_PARALLEL_8_BIT) && ! defined (RP2040_PIO_INTERFACE) && !defined (GD32VF103)
   static   SPIClass& getSPIinstance(void); // Get SPI class handle
+  #endif
 
   uint32_t textcolor, textbgcolor;         // Text foreground and background colours
 
