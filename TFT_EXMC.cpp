@@ -1,4 +1,4 @@
-#include "EXMC.h"
+#include "Processors/GD32/EXMC/EXMC.h"
 #include "TFT_Interface.h"
 
 #define LCD_CMD_ADDR 0x60000000

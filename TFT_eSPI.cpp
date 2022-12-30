@@ -30,7 +30,7 @@
 #elif defined (ARDUINO_ARCH_RP2040)  || defined (ARDUINO_ARCH_MBED) // Raspberry Pi Pico
   #include "Processors/TFT_eSPI_RP2040.c"
 #elif defined (GD32VF103)
-  #include "Processors/TFT_eSPI_GD32.h"
+  #include "Processors/TFT_eSPI_GD32.c"
 #else
   #include "Processors/TFT_eSPI_Generic.c"
 #endif
@@ -634,7 +634,7 @@ void TFT_eSPI::init(uint8_t tc)
   #endif
 
   spi.begin(); // This will set HMISO to input
-  
+
 #elif defined (GD32VF103)
   _com.begin();
 
@@ -4409,7 +4409,11 @@ uint16_t TFT_eSPI::alphaBlend(uint8_t alpha, uint16_t fgc, uint16_t bgc)
 uint16_t TFT_eSPI::alphaBlend(uint8_t alpha, uint16_t fgc, uint16_t bgc, uint8_t dither)
 {
   if (dither) {
+    #if defined(GD32VF103)
+    int16_t alphaDither = (int16_t)alpha - dither;
+    #else
     int16_t alphaDither = (int16_t)alpha - dither + random(2*dither+1); // +/-4 randomised
+    #endif
     alpha = (uint8_t)alphaDither;
     if (alphaDither <  0) alpha = 0;
     if (alphaDither >255) alpha = 255;
@@ -4426,7 +4430,11 @@ uint32_t TFT_eSPI::alphaBlend24(uint8_t alpha, uint32_t fgc, uint32_t bgc, uint8
 {
 
   if (dither) {
+    #if defined(GD32VF103)
+    int16_t alphaDither = (int16_t)alpha - dither;
+    #else
     int16_t alphaDither = (int16_t)alpha - dither + random(2*dither+1); // +/-dither randomised
+    #endif
     alpha = (uint8_t)alphaDither;
     if (alphaDither <  0) alpha = 0;
     if (alphaDither >255) alpha = 255;

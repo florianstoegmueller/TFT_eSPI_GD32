@@ -29,10 +29,7 @@
 #include <User_Setup_Select.h>
 
 //Standard support
-#if defined(GD32VF103)
-#include "Processors/GD32/Print.h"
-#include "gd32_libopt.h"
-#else
+#if !defined(GD32VF103)
 #include <Arduino.h>
 #include <Print.h>
 #include <SPI.h>

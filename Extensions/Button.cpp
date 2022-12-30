@@ -62,7 +62,12 @@ void TFT_eSPI_Button::drawButton(bool inverted, String long_name) {
     text    = _fillcolor;
   }
 
+  #if defined(GD32VF103)
+  uint16_t min = (_w < _h) ? _w : _h;
+  uint8_t r = min / 4; // Corner radius
+  #else
   uint8_t r = min(_w, _h) / 4; // Corner radius
+  #endif
   _gfx->fillRoundRect(_x1, _y1, _w, _h, r, fill);
   _gfx->drawRoundRect(_x1, _y1, _w, _h, r, outline);
 
