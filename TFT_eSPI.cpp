@@ -5255,7 +5255,11 @@ int16_t TFT_eSPI::drawNumber(long long_num, int32_t poX, int32_t poY)
 {
   isDigits = true; // Eliminate jiggle in monospaced fonts
   char str[12];
+  #if defined(GD32VF103)
+  snprintf(str, 12, "%d", long_num);
+  #else
   ltoa(long_num, str, 10);
+  #endif
   return drawString(str, poX, poY, textfont);
 }
 
@@ -5263,7 +5267,11 @@ int16_t TFT_eSPI::drawNumber(long long_num, int32_t poX, int32_t poY, uint8_t fo
 {
   isDigits = true; // Eliminate jiggle in monospaced fonts
   char str[12];
+  #if defined(GD32VF103)
+  snprintf(str, 12, "%d", long_num);
+  #else
   ltoa(long_num, str, 10);
+  #endif
   return drawString(str, poX, poY, font);
 }
 
@@ -5319,7 +5327,11 @@ int16_t TFT_eSPI::drawFloat(float floatNumber, uint8_t dp, int32_t poX, int32_t 
   uint32_t temp = (uint32_t)floatNumber;
 
   // Put integer part into array
+  #if defined(GD32VF103)
+  snprintf(str + ptr, (14-ptr), "%d", temp);
+  #else
   ltoa(temp, str + ptr, 10);
+  #endif
 
   // Find out where the null is to get the digit count loaded
   while ((uint8_t)str[ptr] != 0) ptr++; // Move the pointer along
@@ -5339,7 +5351,11 @@ int16_t TFT_eSPI::drawFloat(float floatNumber, uint8_t dp, int32_t poX, int32_t 
     i++;
     floatNumber *= 10;       // for the next decimal
     temp = floatNumber;      // get the decimal
+    #if defined(GD32VF103)
+    snprintf(str + ptr, (14-ptr), "%d", temp);
+    #else
     ltoa(temp, str + ptr, 10);
+    #endif
     ptr++; digits++;         // Increment pointer and digits count
     floatNumber -= temp;     // Remove that digit
   }
