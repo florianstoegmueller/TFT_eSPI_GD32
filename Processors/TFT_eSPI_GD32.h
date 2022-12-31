@@ -108,17 +108,23 @@
 #define tft_Write_16(C)  _com.transfer16(C)
 #define tft_Write_16S(C) _com.transfer16(((C)>>8) | ((C)<<8))
 
-#define tft_Write_32(C) \
-tft_Write_16((uint16_t) ((C)>>16)); \
-tft_Write_16((uint16_t) ((C)>>0))
+#define tft_Write_32(C)            \
+tft_Write_8(C >> 24);              \
+tft_Write_8((C & 0xFFFFFF) >> 16); \
+tft_Write_8((C & 0xFFFF) >> 8);    \
+tft_Write_8(C & 0xFF)
 
-#define tft_Write_32C(C,D) \
-tft_Write_16((uint16_t) (C)); \
-tft_Write_16((uint16_t) (D))
+#define tft_Write_32C(C,D)         \
+tft_Write_8((uint8_t) ((C) >> 8)); \
+tft_Write_8((uint8_t) ((C)));      \
+tft_Write_8((uint8_t) ((D) >> 8)); \
+tft_Write_8((uint8_t) ((D)));
 
-#define tft_Write_32D(C) \
-tft_Write_16((uint16_t) (C)); \
-tft_Write_16((uint16_t) (C))
+#define tft_Write_32D(C)           \
+tft_Write_8((uint8_t) ((C) >> 8)); \
+tft_Write_8((uint8_t) ((C)));      \
+tft_Write_8((uint8_t) ((C) >> 8)); \
+tft_Write_8((uint8_t) ((C)));
 
 #ifndef tft_Write_16N
   #define tft_Write_16N tft_Write_16
