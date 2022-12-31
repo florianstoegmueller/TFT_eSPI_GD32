@@ -921,7 +921,12 @@ void TFT_eSPI::spiwrite(uint8_t c)
 ** Function name:           writecommand
 ** Description:             Send an 8 bit command to the TFT
 ***************************************************************************************/
-#ifndef RM68120_DRIVER
+#if defined(GD32VF103)
+void TFT_eSPI::writecommand(uint8_t c)
+{
+  _com.writeCommand(c);
+}
+#elif !defined(RM68120_DRIVER)
 void TFT_eSPI::writecommand(uint8_t c)
 {
   begin_tft_write();
@@ -1005,6 +1010,19 @@ uint8_t TFT_eSPI::readcommand8(uint8_t cmd_function, uint8_t index)
   busDir(GPIO_DIR_MASK, OUTPUT);
 
   CS_H;
+
+#elif defined(GD32VF103)
+  index = 0x10 + (index & 0x0F);
+
+  writecommand(0xD9);
+  DC_D; tft_Write_8(index);
+
+  CS_H; // Some displays seem to need CS to be pulsed here, or is just a delay needed?
+  CS_L;
+
+  writecommand(cmd_function);
+  DC_D;
+  reg = tft_Read_8();
 
 #else // SPI interface
   // Tested with ILI9341 set to Interface II i.e. IM [3:0] = "1101"
@@ -3303,6 +3321,15 @@ void TFT_eSPI::setWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
       TX_FIFO = (y0<<16) | y1;
       TX_FIFO = TFT_RAMWR;
     #endif
+  #elif defined(GD32VF103)
+    SPI_BUSY_CHECK;
+    writecommand(TFT_CASET);
+    DC_D; tft_Write_32C(x0, x1);
+    writecommand(TFT_PASET);
+    DC_D; tft_Write_32C(y0, y1);
+    writecommand(TFT_RAMWR);
+    DC_D;
+
   #else
     SPI_BUSY_CHECK;
     DC_C; tft_Write_8(TFT_CASET);
@@ -3378,6 +3405,20 @@ void TFT_eSPI::readAddrWindow(int32_t xs, int32_t ys, int32_t w, int32_t h)
   // Flush the rx buffer and reset overflow flag
   while (spi_is_readable(SPI_X)) (void)spi_get_hw(SPI_X)->dr;
   spi_get_hw(SPI_X)->icr = SPI_SSPICR_RORIC_BITS;
+
+#elif defined(GD32VF103)
+  // Column addr set
+  writecommand(TFT_CASET);
+  DC_D; tft_Write_32C(xs, xe);
+
+  // Row addr set
+  writecommand(TFT_PASET);
+  DC_D; tft_Write_32C(ys, ye);
+
+  // Read CGRAM command
+  writecommand(TFT_RAMRD);
+
+  DC_D;
 
 #else
   // Column addr set
@@ -3563,20 +3604,32 @@ void TFT_eSPI::drawPixel(int32_t x, int32_t y, uint32_t color)
   #else
     // No need to send x if it has not changed (speeds things up)
     if (addr_col != x) {
+      #if defined(GD32VF103)
+      writecommand(TFT_CASET);
+      #else
       DC_C; tft_Write_8(TFT_CASET);
+      #endif
       DC_D; tft_Write_32D(x);
       addr_col = x;
     }
 
     // No need to send y if it has not changed (speeds things up)
     if (addr_row != y) {
+      #if defined(GD32VF103)
+      writecommand(TFT_PASET);
+      #else
       DC_C; tft_Write_8(TFT_PASET);
+      #endif
       DC_D; tft_Write_32D(y);
       addr_row = y;
     }
   #endif
 
+  #if defined(GD32VF103)
+  writecommand(TFT_RAMWR);
+  #else
   DC_C; tft_Write_8(TFT_RAMWR);
+  #endif
 
   #if defined(TFT_PARALLEL_8_BIT) || defined(TFT_PARALLEL_16_BIT) || !defined(ESP32)
     DC_D; tft_Write_16(color);
