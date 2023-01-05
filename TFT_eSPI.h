@@ -768,6 +768,11 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
   static   SPIClass& getSPIinstance(void); // Get SPI class handle
   #endif
 
+  #if defined (GD32VF103) && defined(TOUCH)
+  spi_parameter_struct spi_config{SPI_MASTER,SPI_TRANSMODE_FULLDUPLEX,SPI_FRAMESIZE_8BIT,SPI_NSS_SOFT,SPI_ENDIAN_MSB,SPI_CK_PL_LOW_PH_1EDGE,SPI_PSC_64};
+  GD32_SPI touch_spi;
+  #endif
+
   uint32_t textcolor, textbgcolor;         // Text foreground and background colours
 
   uint32_t bitmap_fg, bitmap_bg;           // Bitmap foreground (bit=1) and background (bit=0) colours

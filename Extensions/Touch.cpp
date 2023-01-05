@@ -59,33 +59,25 @@ uint8_t TFT_eSPI::getTouchRaw(uint16_t *x, uint16_t *y){
   
   // Start YP sample request for x position, read 4 times and keep last sample
   #if defined(GD32VF103)
-  touch_spi.transfer(0xd0);                    // Start new YP conversion
-  touch_spi.transfer(0);                       // Read first 8 bits
-  touch_spi.transfer(0xd0);                    // Read last 8 bits and start new YP conversion
-  touch_spi.transfer(0);                       // Read first 8 bits
-  touch_spi.transfer(0xd0);                    // Read last 8 bits and start new YP conversion
-  touch_spi.transfer(0);                       // Read first 8 bits
-  touch_spi.transfer(0xd0);                    // Read last 8 bits and start new YP conversion
+    uint16_t data2, data1 = 0xffff;
+    do {
+        data2 = data1;
+        touch_spi.send(0x0);
+        data1 = touch_spi.receive() << 8;
+        touch_spi.send(0xd0);
+        data1 = (data1 | touch_spi.receive()) >> 3;
+    } while (data2 != data1); // this is a bottelneck, but assures valid values
+    *x = data1;
 
-  tmp = touch_spi.transfer(0);                   // Read first 8 bits
-  tmp = tmp <<5;
-  tmp |= 0x1f & (touch_spi.transfer(0x90)>>3);   // Read last 8 bits and start new XP conversion
-
-  *x = tmp;
-
-  // Start XP sample request for y position, read 4 times and keep last sample
-  touch_spi.transfer(0);                       // Read first 8 bits
-  touch_spi.transfer(0x90);                    // Read last 8 bits and start new XP conversion
-  touch_spi.transfer(0);                       // Read first 8 bits
-  touch_spi.transfer(0x90);                    // Read last 8 bits and start new XP conversion
-  touch_spi.transfer(0);                       // Read first 8 bits
-  touch_spi.transfer(0x90);                    // Read last 8 bits and start new XP conversion
-
-  tmp = touch_spi.transfer(0);                 // Read first 8 bits
-  tmp = tmp <<5;
-  tmp |= 0x1f & (touch_spi.transfer(0)>>3);    // Read last 8 bits
-
-  *y = tmp;
+    data2, data1 = 0xffff;
+    do {
+        data2 = data1;
+        touch_spi.send(0x0);
+        data1 = touch_spi.receive() << 8;
+        touch_spi.send(0x90);
+        data1 = (data1 | touch_spi.receive()) >> 3;
+    } while (data2 != data1); // this is a bottelneck, but assures valid values
+    *y = data1;
   #else
   spi.transfer(0xd0);                    // Start new YP conversion
   spi.transfer(0);                       // Read first 8 bits
@@ -132,7 +124,7 @@ uint16_t TFT_eSPI::getTouchRawZ(void){
   // Z sample request
   #if defined(GD32VF103)
   int16_t tz = 0xFFF;
-  touch_spi.transfer(0xb0);               // Start new Z1 conversion
+  touch_spi.send(0xb0);               // Start new Z1 conversion
   tz += touch_spi.transfer16(0xc0) >> 3;  // Read Z1 and start Z2 conversion
   tz -= touch_spi.transfer16(0x00) >> 3;  // Read Z2
   #else
