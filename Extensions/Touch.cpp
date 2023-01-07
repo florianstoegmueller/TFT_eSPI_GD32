@@ -64,7 +64,7 @@ uint8_t TFT_eSPI::getTouchRaw(uint16_t *x, uint16_t *y){
         data2 = data1;
         touch_spi.send(0x0);
         data1 = touch_spi.receive() << 8;
-        touch_spi.send(0xd0);
+        touch_spi.send(0x90);
         data1 = (data1 | touch_spi.receive()) >> 3;
     } while (data2 != data1); // this is a bottelneck, but assures valid values
     *x = data1;
@@ -74,7 +74,7 @@ uint8_t TFT_eSPI::getTouchRaw(uint16_t *x, uint16_t *y){
         data2 = data1;
         touch_spi.send(0x0);
         data1 = touch_spi.receive() << 8;
-        touch_spi.send(0x90);
+        touch_spi.send(0xd0);
         data1 = (data1 | touch_spi.receive()) >> 3;
     } while (data2 != data1); // this is a bottelneck, but assures valid values
     *y = data1;
